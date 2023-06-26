@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response,jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 
@@ -82,5 +82,79 @@ def users():
 
     return response
 
-if __name__ == '__main__':
+
+#adding another module of rewiew to get by id
+
+
+# @app.route decorator accepts methods as a default argument.
+# This is alist accepted methods as strings 
+@app.route('/reviews/<int:id>',methods=['GET', 'DELETE'])
+def review_by_id(id):
+    review = Review.query.filter_by(id=id).first()
+    
+    if request.method == 'GET':
+        review_dict = review.to_dict()
+        
+        response  = make_response(
+            
+            jsonify(review_dict),
+            200
+        )
+        return response
+    
+    
+    elif request.method == 'DELETE':
+        db.session.delete(review)
+        db.session.commit()
+        
+        response_body  = {
+            
+            "delete_succesful":True,
+            "message": "Review deleted."
+            
+        }
+        response  = make_response(
+            
+        jsonify(response_body),
+        200
+        
+        )
+        
+        return response
+        
+
+
+
+#function to adding reviews
+
+
+
+
+@app.route('/reviews', methods=['GET','POST'])
+def reviews():
+    if request.method  == 'GET':
+        reviews  =  []
+    for review in Review.query.all():
+        review_dict = review.to_dict()
+        reviews.append(review_dict)
+        
+        response  = make_response(
+            jsonify(reviews),
+            200
+        )
+        return  response
+    
+    
+    elif request.method   ==  'POST':
+        response_body  = {}
+        response =  make_response(
+            
+            response_body,
+            201
+        )
+        
+        return response
+                 
+
+if __name__ == '__main__': 
     app.run(port=5555, debug=True)
